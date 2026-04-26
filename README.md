@@ -7,8 +7,8 @@ Implementa um leitor e visualizador de cenas 3D com iluminação de Phong, contr
 
 ## Integrantes
 
-Emanuele Schlemmer Thomazzoni
-Ana Beatriz Stahl
+- Emanuele Schlemmer Thomazzoni
+- Ana Beatriz Stahl
 
 ---
 
@@ -30,15 +30,15 @@ Ana Beatriz Stahl
 
 ## Dependências
 
-| Biblioteca | Versão mínima | Instalação |
-|---|---|---|
-| OpenGL | 3.3 Core | Driver da GPU |
-| [GLFW](https://www.glfw.org/) | 3.4 | baixado automaticamente via CMake |
-| [GLM](https://github.com/g-truc/glm) | master | baixado automaticamente via CMake |
-| [Assimp](https://github.com/assimp/assimp) | 5.3 | baixado automaticamente via CMake |
-| [glad](https://glad.dav1d.de/) | OpenGL 3.3 Core | manual (ver abaixo) |
-| [Dear ImGui](https://github.com/ocornut/imgui) | master | baixado automaticamente via CMake |
-| CMake | 3.10+ | cmake.org |
+| Biblioteca                                     | Versão mínima   | Instalação                        |
+| ---------------------------------------------- | --------------- | --------------------------------- |
+| OpenGL                                         | 3.3 Core        | Driver da GPU                     |
+| [GLFW](https://www.glfw.org/)                  | 3.4             | baixado automaticamente via CMake |
+| [GLM](https://github.com/g-truc/glm)           | master          | baixado automaticamente via CMake |
+| [Assimp](https://github.com/assimp/assimp)     | 5.3             | baixado automaticamente via CMake |
+| [glad](https://glad.dav1d.de/)                 | OpenGL 3.3 Core | manual (ver abaixo)               |
+| [Dear ImGui](https://github.com/ocornut/imgui) | master          | baixado automaticamente via CMake |
+| CMake                                          | 3.10+           | cmake.org                         |
 
 ---
 
@@ -55,6 +55,7 @@ Ana Beatriz Stahl
 ### Configurar GLAD (manual)
 
 Baixe a GLAD manualmente em <https://glad.dav1d.de/>:
+
 - Selecione **Language: C/C++**
 - **API gl: Version 3.3**
 - **Profile: Core**
@@ -80,6 +81,7 @@ cmake --build build --config Release  # Windows
 ```
 
 O executável estará em:
+
 - Windows: `build/Release/visualizador.exe`
 - Linux/macOS: `build/visualizador`
 
@@ -100,40 +102,43 @@ O executável estará em:
 ## Controles
 
 ### Câmera
-| Tecla | Ação |
-|---|---|
-| `W / S` | Avança / recua |
-| `A / D` | Lateral esquerda / direita |
-| `Q / E` | Desce / sobe |
-| Mouse | Rotaciona a câmera |
-| Scroll | Zoom (altera FOV) |
-| `Tab` | Alterna captura do mouse (libera para ImGui) |
-| `P` | Alterna projeção perspectiva ↔ ortográfica |
+
+| Tecla   | Ação                                         |
+| ------- | -------------------------------------------- |
+| `W / S` | Avança / recua                               |
+| `A / D` | Lateral esquerda / direita                   |
+| `Q / E` | Desce / sobe                                 |
+| Mouse   | Rotaciona a câmera                           |
+| Scroll  | Zoom (altera FOV)                            |
+| `Tab`   | Alterna captura do mouse (libera para ImGui) |
+| `P`     | Alterna projeção perspectiva ↔ ortográfica   |
 
 ### Objeto Selecionado
-| Tecla | Ação |
-|---|---|
-| `1` – `9` | Seleciona objeto pelo índice |
-| `I / K` | Translação +Y / −Y |
-| `J / L` | Translação −X / +X |
-| `U / O` | Translação +Z / −Z |
+
+| Tecla           | Ação                                       |
+| --------------- | ------------------------------------------ |
+| `1` – `9`       | Seleciona objeto pelo índice               |
+| `I / K`         | Translação +Y / −Y                         |
+| `J / L`         | Translação −X / +X                         |
+| `U / O`         | Translação +Z / −Z                         |
 | `F1` (+`Shift`) | Rotação no eixo X (horário / anti-horário) |
-| `F2` (+`Shift`) | Rotação no eixo Y |
-| `F3` (+`Shift`) | Rotação no eixo Z |
-| `NumPad +` | Escala uniforme +5% |
-| `NumPad −` | Escala uniforme −5% |
+| `F2` (+`Shift`) | Rotação no eixo Y                          |
+| `F3` (+`Shift`) | Rotação no eixo Z                          |
+| `NumPad +`      | Escala uniforme +5%                        |
+| `NumPad −`      | Escala uniforme −5%                        |
 
 ### Visualização
-| Tecla | Ação |
-|---|---|
-| `V` | Alterna wireframe sobreposto |
-| `Esc` | Fecha a aplicação |
+
+| Tecla | Ação                         |
+| ----- | ---------------------------- |
+| `V`   | Alterna wireframe sobreposto |
+| `Esc` | Fecha a aplicação            |
 
 ---
 
 ## Arquitetura do Código
 
-```
+```txt
 src/
 ├── main.cpp      Loop principal, callbacks GLFW, renderização, ImGui
 ├── Shader.h      Compilação e linkagem de shaders, uniformes
