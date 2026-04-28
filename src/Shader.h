@@ -9,11 +9,7 @@
 #include <sstream>
 #include <iostream>
 
-// ---------------------------------------------------------------------------
-// Shader
-// Carrega, compila e linka um par de shaders (vertex + fragment).
-// Expõe métodos utilitários para configurar uniformes.
-// ---------------------------------------------------------------------------
+
 class Shader
 {
 public:
@@ -53,7 +49,6 @@ public:
 
     void use() const { glUseProgram(ID); }
 
-    // ----- Uniformes -----
     void setBool (const std::string& name, bool  value) const
     { glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); }
 

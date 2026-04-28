@@ -38,7 +38,7 @@ FetchContent_MakeAvailable(stb_image)
 FetchContent_Declare(
   assimp
   GIT_REPOSITORY https://github.com/assimp/assimp.git
-  GIT_TAG 5.3
+  GIT_TAG v5.3.1
 )
 FetchContent_MakeAvailable(assimp)
 
@@ -60,7 +60,7 @@ include_directories(${imgui_SOURCE_DIR})
 include_directories(${imgui_SOURCE_DIR}/backends)
 include_directories(${assimp_SOURCE_DIR}/include)
 
-add_compile_options(-Wno-pragmas)
+#add_compile_options(-Wno-pragmas)
 
 # Define as bibliotecas para cada sistema operacional
 if(WIN32)

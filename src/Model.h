@@ -1,5 +1,4 @@
 #pragma once
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -14,11 +13,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 
-// ---------------------------------------------------------------------------
-// PhongMaterial
-// Propriedades de refletância do material no modelo de Phong.
-// Configuráveis pelo usuário via ImGui ou teclado.
-// ---------------------------------------------------------------------------
+
 struct PhongMaterial {
     glm::vec3 ka        = {0.1f, 0.1f, 0.1f}; // ambiente
     glm::vec3 kd        = {0.7f, 0.7f, 0.7f}; // difuso
@@ -26,15 +21,12 @@ struct PhongMaterial {
     float     shininess = 32.0f;               // brilho especular
 };
 
-// ---------------------------------------------------------------------------
-// Model
-// Carrega um arquivo 3D (OBJ, PLY, etc.) via Assimp e armazena as malhas.
-// Também mantém as transformações geométricas do objeto na cena.
-// ---------------------------------------------------------------------------
+
+//carrega arquivo 3d
 class Model
 {
 public:
-    std::string        name;      // nome de exibição (basename do arquivo)
+    std::string        name;      // nome de exibição
     std::vector<Mesh>  meshes;    // lista de malhas extraídas do arquivo
     PhongMaterial      material;  // propriedades de material configuráveis
 
@@ -45,7 +37,6 @@ public:
 
     explicit Model(const std::string& path)
     {
-        // Extrai o nome amigável do caminho
         size_t sep = path.find_last_of("/\\");
         name = (sep != std::string::npos) ? path.substr(sep + 1) : path;
 
@@ -88,11 +79,7 @@ private:
     {
         Assimp::Importer importer;
 
-        // Flags de pós-processamento:
-        //  aiProcess_Triangulate       → garante que todas as faces são triângulos
-        //  aiProcess_GenSmoothNormals  → gera normais suaves se o arquivo não as tiver
-        //  aiProcess_FlipUVs           → corrige coordenadas de textura (origem bottom-left → top-left)
-        //  aiProcess_CalcTangentSpace  → calcula tangentes (não usadas aqui, mas útil para extensões)
+
         const aiScene* scene = importer.ReadFile(path,
             aiProcess_Triangulate |
             aiProcess_GenSmoothNormals |
@@ -125,7 +112,6 @@ private:
         std::vector<Vertex>       vertices;
         std::vector<unsigned int> indices;
 
-        // ----- Vértices -----
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
             Vertex vertex;
 
@@ -136,7 +122,6 @@ private:
                 mesh->mVertices[i].z
             };
 
-            // Normal (vn no OBJ)
             if (mesh->HasNormals()) {
                 vertex.Normal = {
                     mesh->mNormals[i].x,
@@ -147,7 +132,6 @@ private:
                 vertex.Normal = {0.0f, 1.0f, 0.0f};
             }
 
-            // Coordenadas de textura (vt no OBJ) — apenas o primeiro conjunto
             if (mesh->mTextureCoords[0]) {
                 vertex.TexCoords = {
                     mesh->mTextureCoords[0][i].x,
@@ -160,7 +144,6 @@ private:
             vertices.push_back(vertex);
         }
 
-        // ----- Índices (faces triangulares) -----
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
             aiFace face = mesh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; j++)

@@ -3,13 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// ---------------------------------------------------------------------------
-// Camera (FPS – First Person Shooter)
-// Mantém posição, orientação e gera as matrizes de visão/projeção.
-// O movimento é controlado pelos métodos processKeyboard() e processMouse().
-// ---------------------------------------------------------------------------
+// movimento é controlado pelos métodos processKeyboard() e processMouse().
 
-// Direções de movimento possíveis
+// movimento possíveis
 enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 class Camera
@@ -29,7 +25,7 @@ public:
     // Parâmetros de controle
     float MovementSpeed;
     float MouseSensitivity;
-    float Fov;           // campo de visão (usado na projeção perspectiva)
+    float Fov;         
 
     Camera(glm::vec3 position = {0.0f, 0.0f, 3.0f},
            glm::vec3 up       = {0.0f, 1.0f, 0.0f},
@@ -47,7 +43,7 @@ public:
         updateCameraVectors();
     }
 
-    // Retorna a matriz de visão (Look-At)
+    // Retorna a matriz de visão
     glm::mat4 getViewMatrix() const
     {
         return glm::lookAt(Position, Position + Front, Up);
@@ -74,7 +70,7 @@ public:
         Yaw   += xoffset;
         Pitch += yoffset;
 
-        // Limita Pitch para evitar inversão da câmera (gimbal lock)
+        // evita inversão de camera
         if (constrainPitch) {
             if (Pitch >  89.0f) Pitch =  89.0f;
             if (Pitch < -89.0f) Pitch = -89.0f;
@@ -83,7 +79,7 @@ public:
         updateCameraVectors();
     }
 
-    // Processa zoom via scroll do mouse
+    //zoom com scroll do mouse
     void processScroll(float yoffset)
     {
         Fov -= yoffset;
@@ -92,7 +88,7 @@ public:
     }
 
 private:
-    // Recalcula Front, Right e Up a partir dos ângulos de Euler
+    //recalcula a partir de angulos de euler
     void updateCameraVectors()
     {
         glm::vec3 front;

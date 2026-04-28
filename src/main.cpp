@@ -1,47 +1,31 @@
-// =============================================================================
-// Visualizador de Cenas 3D - Pipeline Gráfico Programável
-// Disciplina: Computação Gráfica
-// =============================================================================
-// Dependências: OpenGL 3.3+, GLFW3, GLM, Assimp, glad, ImGui
-// =============================================================================
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-
 #include <iostream>
 #include <vector>
 #include <string>
 #include <memory>
 #include <filesystem>
-
 #include "Shader.h"
 #include "Camera.h"
 #include "Model.h"
 
-// =============================================================================
-// Constantes globais
-// =============================================================================
 static constexpr int   SCR_WIDTH  = 1280;
 static constexpr int   SCR_HEIGHT = 720;
 static constexpr float NEAR_PLANE = 0.1f;
 static constexpr float FAR_PLANE  = 500.0f;
 
-// =============================================================================
-// Estado global da aplicação
-// =============================================================================
+
 Camera camera({0.0f, 1.5f, 6.0f});
 
 float lastX      = SCR_WIDTH  / 2.0f;
 float lastY      = SCR_HEIGHT / 2.0f;
 bool  firstMouse = true;
-bool  mouseCaptured = true; // começa capturado (modo FPS)
+bool  mouseCaptured = true; 
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -52,22 +36,20 @@ glm::vec3 lightColor = {1.0f, 1.0f, 1.0f};
 
 // Modo de visualização
 bool showWireframe    = false;
-bool perspectiveProj  = true;  // true = perspectiva, false = ortográfica
+bool perspectiveProj  = true;  
 bool showGrid         = true;
 bool showAxes         = true;
 
 // Objetos da cena
 std::vector<std::unique_ptr<Model>> models;
-int selectedModel = 0; // índice do objeto selecionado
+int selectedModel = 0; 
 
 // Passo de transformação por tecla
 static const float TRANS_STEP   = 0.1f;
-static const float ROT_STEP     = 5.0f;  // graus
+static const float ROT_STEP     = 5.0f;  
 static const float SCALE_STEP   = 0.05f;
 
-// =============================================================================
-// Protótipos de funções auxiliares
-// =============================================================================
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -76,12 +58,10 @@ void buildGridBuffers(unsigned int& vao, unsigned int& vbo, int halfSize, std::v
 void buildAxesBuffers(unsigned int& vao, unsigned int& vbo);
 void renderImGui();
 
-// =============================================================================
-// main
-// =============================================================================
+
 int main(int argc, char* argv[])
 {
-    // ---- Inicialização do GLFW ----
+    //Inicialização do GLFW 
     if (!glfwInit()) {
         std::cerr << "Falha ao inicializar GLFW\n";
         return -1;
@@ -106,7 +86,7 @@ int main(int argc, char* argv[])
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // ---- Carrega ponteiros OpenGL com glad ----
+    //Carrega ponteiros OpenGL com glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Falha ao inicializar glad\n";
         return -1;
@@ -116,62 +96,62 @@ int main(int argc, char* argv[])
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // ---- Inicializa ImGui ----
+    //Inicializa ImGui 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // ---- Carrega shaders ----
+    // Carrega shaders
     Shader phongShader   ("shaders/phong.vert",     "shaders/phong.frag");
     Shader wireShader    ("shaders/wireframe.vert",  "shaders/wireframe.frag");
     Shader gridShader    ("shaders/grid.vert",       "shaders/grid.frag");
 
-    // ---- Carrega modelos passados como argumento ou padrão ----
+    //Carrega modelos passados como argumento ou padrão
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
             std::cout << "Carregando: " << argv[i] << "\n";
             models.push_back(std::make_unique<Model>(argv[i]));
-            // Afasta objetos automaticamente para não sobrepor
             models.back()->position.x = (float)(i - 1) * 2.5f;
+
+            models.back()->material.ka = glm::vec3(0.1f, 0.1f, 0.1f); // Luz ambiente baixa 
+            models.back()->material.kd = glm::vec3(0.6f, 0.6f, 0.6f); // Cor base do objeto 
+            models.back()->material.ks = glm::vec3(0.5f, 0.5f, 0.5f); // Brilho do reflexo
+            models.back()->material.shininess = 32.0f;                // Tamanho do ponto de luz
         }
     } else {
-        // Avisa se nenhum modelo foi fornecido
         std::cout << "Uso: visualizador <arquivo1.obj> [arquivo2.obj] ...\n";
         std::cout << "Nenhum modelo carregado. Apenas a grid e eixos serão exibidos.\n";
     }
 
-    // ---- Grid de chão ----
+    //grid
     unsigned int gridVAO = 0, gridVBO = 0;
     std::vector<float> gridVerts;
     buildGridBuffers(gridVAO, gridVBO, 10, gridVerts);
 
-    // ---- Eixos (X vermelho, Y verde, Z azul) ----
+    //eixos
     unsigned int axesVAO = 0, axesVBO = 0;
     buildAxesBuffers(axesVAO, axesVBO);
 
-    // ==========================================================================
-    // Loop principal de renderização
-    // ==========================================================================
+    //renderização loop
     while (!glfwWindowShouldClose(window)) {
-        // Calcula deltaTime para movimento independente de FPS
         float currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(window);
 
-        // Limpa os buffers de cor e profundidade
+        //limpeza de buffer cor e profundidade
         glClearColor(0.15f, 0.15f, 0.18f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Obtém dimensões atuais da janela (pode ter sido redimensionada)
+        //dimensoes da janela
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
         float aspect = (fbHeight > 0) ? (float)fbWidth / (float)fbHeight : 1.0f;
 
-        // ---- Matrizes de câmera ----
+        //matriz de camera
         glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection;
         if (perspectiveProj) {
@@ -184,9 +164,7 @@ int main(int argc, char* argv[])
                                     NEAR_PLANE, FAR_PLANE);
         }
 
-        // ==================================================================
-        // 1. Renderiza a Grid de chão
-        // ==================================================================
+        //render se grid e eixos
         if (showGrid) {
             gridShader.use();
             gridShader.setMat4("view",       view);
@@ -198,9 +176,7 @@ int main(int argc, char* argv[])
             glBindVertexArray(0);
         }
 
-        // ==================================================================
-        // 2. Renderiza os Eixos (X Y Z)
-        // ==================================================================
+
         if (showAxes) {
             wireShader.use();
             wireShader.setMat4("model",      glm::mat4(1.0f));
@@ -208,21 +184,16 @@ int main(int argc, char* argv[])
             wireShader.setMat4("projection", projection);
 
             glBindVertexArray(axesVAO);
-            // Eixo X → vermelho
             wireShader.setVec3("wireColor", {1.0f, 0.0f, 0.0f});
             glDrawArrays(GL_LINES, 0, 2);
-            // Eixo Y → verde
             wireShader.setVec3("wireColor", {0.0f, 1.0f, 0.0f});
             glDrawArrays(GL_LINES, 2, 2);
-            // Eixo Z → azul
             wireShader.setVec3("wireColor", {0.0f, 0.0f, 1.0f});
             glDrawArrays(GL_LINES, 4, 2);
             glBindVertexArray(0);
         }
 
-        // ==================================================================
-        // 3. Renderiza os modelos com iluminação de Phong
-        // ==================================================================
+        //render iluminacao com pong
         phongShader.use();
         phongShader.setMat4("view",       view);
         phongShader.setMat4("projection", projection);
@@ -231,18 +202,20 @@ int main(int argc, char* argv[])
         phongShader.setVec3("viewPos",    camera.Position);
 
         for (int i = 0; i < (int)models.size(); i++) {
-            // Ajusta ka levemente para destacar o objeto selecionado
-            PhongMaterial mat = models[i]->material;
-            if (i == selectedModel)
-                mat.ka = mat.ka + glm::vec3(0.08f); // pequeno brilho extra
+            PhongMaterial materialOriginal = models[i]->material;
 
-            models[i]->material = mat; // (temporário, restaurado abaixo)
+            PhongMaterial mat = materialOriginal;
+            if (i == selectedModel)
+                mat.ka = mat.ka + glm::vec3(0.08f); 
+
+            models[i]->material = mat; 
             models[i]->draw(phongShader);
+
+        
+            models[i]->material = materialOriginal;
         }
 
-        // ==================================================================
-        // 4. Sobrepõe wireframe (opcional)
-        // ==================================================================
+        //wireframe
         if (showWireframe && !models.empty()) {
             glPolygonOffset(1.0f, 1.0f);
             glEnable(GL_POLYGON_OFFSET_LINE);
@@ -263,9 +236,7 @@ int main(int argc, char* argv[])
             glDisable(GL_POLYGON_OFFSET_LINE);
         }
 
-        // ==================================================================
-        // 5. Interface ImGui
-        // ==================================================================
+        //interface
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -277,7 +248,6 @@ int main(int argc, char* argv[])
         glfwPollEvents();
     }
 
-    // Limpeza
     for (auto& m : models) m->free();
     glDeleteVertexArrays(1, &gridVAO);
     glDeleteBuffers(1, &gridVBO);
@@ -292,9 +262,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-// =============================================================================
-// Callbacks e processamento de entrada
-// =============================================================================
+
 
 void framebuffer_size_callback(GLFWwindow*, int width, int height)
 {
@@ -315,7 +283,7 @@ void mouse_callback(GLFWwindow*, double xposIn, double yposIn)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // invertido: y cresce para cima em OpenGL
+    float yoffset = lastY - ypos; 
     lastX = xpos;
     lastY = ypos;
 
@@ -345,7 +313,7 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) tabPressed = false;
 
-    // ---- Câmera (WASD + Q/E) ----
+    //camera
     if (mouseCaptured) {
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.processKeyboard(FORWARD,  deltaTime);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.processKeyboard(BACKWARD, deltaTime);
@@ -358,13 +326,11 @@ void processInput(GLFWwindow* window)
     if (models.empty()) return;
     Model& sel = *models[selectedModel];
 
-    // ---- Seleção de objeto (1–9) ----
     for (int i = 0; i < (int)models.size() && i < 9; i++) {
         if (glfwGetKey(window, GLFW_KEY_1 + i) == GLFW_PRESS)
             selectedModel = i;
     }
 
-    // ---- Translação (I/K = Y, J/L = X, U/O = Z) ----
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) sel.position.y += TRANS_STEP;
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) sel.position.y -= TRANS_STEP;
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) sel.position.x -= TRANS_STEP;
@@ -372,14 +338,12 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) sel.position.z += TRANS_STEP;
     if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) sel.position.z -= TRANS_STEP;
 
-    // ---- Rotação (F1=X, F2=Y, F3=Z; Shift inverte) ----
     bool shift = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
     float dir  = shift ? -1.0f : 1.0f;
     if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) sel.rotation.x += dir * ROT_STEP;
     if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) sel.rotation.y += dir * ROT_STEP;
     if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) sel.rotation.z += dir * ROT_STEP;
 
-    // ---- Escala uniforme (+ / -) ----
     static bool plusP = false, minusP = false;
     if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS && !plusP) {
         plusP = true;
@@ -392,7 +356,6 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_RELEASE) minusP = false;
 
-    // ---- Wireframe (V) ----
     static bool vPressed = false;
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && !vPressed) {
         vPressed = true;
@@ -400,7 +363,6 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_RELEASE) vPressed = false;
 
-    // ---- Projeção (P) ----
     static bool pPressed = false;
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && !pPressed) {
         pPressed = true;
@@ -409,9 +371,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE) pPressed = false;
 }
 
-// =============================================================================
-// Constrói VAO/VBO de uma grid de linhas no plano XZ
-// =============================================================================
+
 void buildGridBuffers(unsigned int& vao, unsigned int& vbo,
                       int halfSize, std::vector<float>& verts)
 {
@@ -434,9 +394,7 @@ void buildGridBuffers(unsigned int& vao, unsigned int& vbo,
     glBindVertexArray(0);
 }
 
-// =============================================================================
-// Constrói VAO/VBO dos eixos (X, Y, Z)
-// =============================================================================
+
 void buildAxesBuffers(unsigned int& vao, unsigned int& vbo)
 {
     float axisVerts[] = {
@@ -454,9 +412,7 @@ void buildAxesBuffers(unsigned int& vao, unsigned int& vbo)
     glBindVertexArray(0);
 }
 
-// =============================================================================
-// Painel ImGui com controles completos
-// =============================================================================
+
 void renderImGui()
 {
     ImGui::SetNextWindowPos({10, 10}, ImGuiCond_Always);
@@ -464,7 +420,6 @@ void renderImGui()
     ImGui::Begin("Visualizador 3D", nullptr,
                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
 
-    // ---- Ajuda ----
     if (ImGui::CollapsingHeader("Controles (teclado)", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::TextDisabled("Câmera: WASD / Q(baixo) / E(cima)");
         ImGui::TextDisabled("Mouse: rotaciona câmera  |  Tab: libera mouse");
@@ -475,7 +430,6 @@ void renderImGui()
         ImGui::TextDisabled("V: wireframe   P: projeção   Esc: sair");
     }
 
-    // ---- Cena ----
     if (ImGui::CollapsingHeader("Cena", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Checkbox("Grid",       &showGrid);
         ImGui::SameLine();
@@ -487,13 +441,11 @@ void renderImGui()
         if (ImGui::Button(projLabel)) perspectiveProj = !perspectiveProj;
     }
 
-    // ---- Luz ----
     if (ImGui::CollapsingHeader("Luz Pontual")) {
         ImGui::DragFloat3("Posição",      &lightPos.x,   0.1f);
         ImGui::ColorEdit3("Cor da Luz",   &lightColor.x);
     }
 
-    // ---- Objeto selecionado ----
     if (!models.empty()) {
         if (ImGui::CollapsingHeader("Objeto Selecionado", ImGuiTreeNodeFlags_DefaultOpen)) {
             // Combo de seleção

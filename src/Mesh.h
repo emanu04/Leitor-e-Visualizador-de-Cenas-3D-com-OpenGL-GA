@@ -7,23 +7,14 @@
 
 #include "Shader.h"
 
-// ---------------------------------------------------------------------------
-// Vertex
-// Estrutura de dados que representa um único vértice na memória da CPU.
-// O layout (posição → normal → textura) deve corresponder exatamente ao
-// glVertexAttribPointer configurado em setupMesh().
-// ---------------------------------------------------------------------------
+
 struct Vertex {
     glm::vec3 Position;  // location 0
     glm::vec3 Normal;    // location 1
     glm::vec2 TexCoords; // location 2
 };
 
-// ---------------------------------------------------------------------------
-// Mesh
-// Encapsula o VAO, VBO e EBO de uma malha triangular.
-// Recebe vértices e índices já processados pelo Model/parser.
-// ---------------------------------------------------------------------------
+
 class Mesh
 {
 public:
@@ -38,7 +29,6 @@ public:
         setupMesh();
     }
 
-    // Desenha a malha usando o shader já ativo (use() deve ter sido chamado antes)
     void draw() const
     {
         glBindVertexArray(VAO);
@@ -46,7 +36,7 @@ public:
         glBindVertexArray(0);
     }
 
-    // Libera recursos de GPU
+  
     void free()
     {
         glDeleteVertexArrays(1, &VAO);
@@ -62,7 +52,6 @@ private:
         glGenBuffers(1, &VBO);
         glGenBuffers(1, &EBO);
 
-        // Vincula o VAO para gravar o estado de atributos
         glBindVertexArray(VAO);
 
         // Envia dados de vértices para a GPU
@@ -72,7 +61,6 @@ private:
                      vertices.data(),
                      GL_STATIC_DRAW);
 
-        // Envia índices (EBO) para a GPU
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                      indices.size() * sizeof(unsigned int),
