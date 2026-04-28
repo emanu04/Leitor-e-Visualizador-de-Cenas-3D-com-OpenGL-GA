@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+//carregamento dos arquivos 3d 
 
 struct PhongMaterial {
     glm::vec3 ka        = {0.1f, 0.1f, 0.1f}; // ambiente

@@ -7,6 +7,7 @@
 
 #include "Shader.h"
 
+//representa uma malha 3d geometrica e gerencia buffers na gpu
 
 struct Vertex {
     glm::vec3 Position;  // location 0

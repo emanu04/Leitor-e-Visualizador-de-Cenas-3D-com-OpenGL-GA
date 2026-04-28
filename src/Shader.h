@@ -9,15 +9,20 @@
 #include <sstream>
 #include <iostream>
 
+//carrega compila e linka shaders GLSL do disco
+//readfile() le o conteudo GLSL dos arquivos
+//glcompileshader() compila o vertex e fragment shaders
+//gllinkprogram() linka o programa de shaders
+
 
 class Shader
 {
 public:
     unsigned int ID; // ID do programa OpenGL
-
+    //construtor carrega e compila shaders
     Shader(const char* vertexPath, const char* fragmentPath)
     {
-        // 1. Lê os arquivos de shader do disco
+        // 1. Lê os arquivos de shader do disco .vert .frag
         std::string   vertexCode   = readFile(vertexPath);
         std::string   fragmentCode = readFile(fragmentPath);
         const char*   vShaderCode  = vertexCode.c_str();

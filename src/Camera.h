@@ -18,9 +18,9 @@ public:
     glm::vec3 Right;
     glm::vec3 WorldUp;
 
-    // Ângulos de Euler
-    float Yaw;   // rotação horizontal (eixo Y)
-    float Pitch; // rotação vertical   (eixo X)
+    // Ângulos de Euler (rotação da câmera)
+    float Yaw;   // rotação horizontal (eixo Y) yaw
+    float Pitch; // rotação vertical   (eixo X) pitch
 
     // Parâmetros de controle
     float MovementSpeed;
@@ -44,6 +44,7 @@ public:
     }
 
     // Retorna a matriz de visão
+    //glm::lookAt(posicao, posicao + frente, up) cria a matriz que posiciona a camera
     glm::mat4 getViewMatrix() const
     {
         return glm::lookAt(Position, Position + Front, Up);

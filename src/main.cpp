@@ -14,6 +14,11 @@
 #include "Camera.h"
 #include "Model.h"
 
+
+//GLFW cria janela e configura
+//GLAD carrega os ponteiros das funções OpenGL
+//IMGUI cria a interface do usuario
+//SHADERS carrega 3 pares phong wireframe e grid
 static constexpr int   SCR_WIDTH  = 1280;
 static constexpr int   SCR_HEIGHT = 720;
 static constexpr float NEAR_PLANE = 0.1f;
