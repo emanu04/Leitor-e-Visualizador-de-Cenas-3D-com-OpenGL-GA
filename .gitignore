@@ -33,3 +33,5 @@ CMakeUserPresets.json
 *.log
 .DS_Store
 Thumbs.db
+
+imgui.ini

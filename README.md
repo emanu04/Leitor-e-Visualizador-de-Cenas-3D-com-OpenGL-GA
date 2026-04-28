@@ -74,9 +74,12 @@ Todas as dependências (GLFW, GLM, Assimp, ImGui) são baixadas automaticamente 
 
 ```bash
 # Na pasta do projeto:
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)  # Linux/macOS
-# ou
+cmake -B build -DCMAKE_BUILD_TYPE=Release # Linux
+cmake --build build -j$(nproc) # Linux
+
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DASSIMP_BUILD_ZLIB=OFF # macOS
+cmake --build build -j$(nproc) # macOS
+
 cmake --build build --config Release  # Windows
 ```
 
