@@ -412,20 +412,24 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) sel.rotation.y += dir * ROT_STEP;
     if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) sel.rotation.z += dir * ROT_STEP;
 
-    // NumPad +/-: escala uniforme. Usa flag estática para disparar uma vez por pressionamento
+    // NumPad+/- ou =/- : escala uniforme. Usa flag estática para disparar uma vez por pressionamento
     // (evita escala contínua enquanto a tecla fica pressionada).
     static bool plusP = false, minusP = false;
-    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS && !plusP) {
+    bool plusDown  = glfwGetKey(window, GLFW_KEY_KP_ADD)      == GLFW_PRESS
+                  || glfwGetKey(window, GLFW_KEY_EQUAL)        == GLFW_PRESS;
+    bool minusDown = glfwGetKey(window, GLFW_KEY_KP_SUBTRACT)  == GLFW_PRESS
+                  || glfwGetKey(window, GLFW_KEY_MINUS)        == GLFW_PRESS;
+    if (plusDown && !plusP) {
         plusP = true;
         sel.scale += glm::vec3(SCALE_STEP);
     }
-    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_RELEASE) plusP = false;
-    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS && !minusP) {
+    if (!plusDown) plusP = false;
+    if (minusDown && !minusP) {
         minusP = true;
         // glm::max garante que a escala nunca chegue a zero (o que causaria inversão do objeto)
         sel.scale = glm::max(sel.scale - glm::vec3(SCALE_STEP), glm::vec3(0.01f));
     }
-    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_RELEASE) minusP = false;
+    if (!minusDown) minusP = false;
 
     // V: alterna o modo wireframe
     static bool vPressed = false;
@@ -513,7 +517,7 @@ void renderImGui()
         ImGui::TextDisabled("Teclas 1-9: seleciona objeto");
         ImGui::TextDisabled("IJKL + U/O: translação XYZ");
         ImGui::TextDisabled("F1/F2/F3 (+Shift): rotação XYZ");
-        ImGui::TextDisabled("NumPad+/-: escala uniforme");
+        ImGui::TextDisabled("NumPad+/- ou =/- : escala uniforme");
         ImGui::TextDisabled("V: wireframe   P: projeção   Esc: sair");
     }
 
